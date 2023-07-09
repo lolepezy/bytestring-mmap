@@ -70,8 +70,6 @@ module System.IO.Posix.MMap (
 
 import System.IO.Posix.MMap.Internal
 
--- import System.IO
--- import qualified System.IO as IO
 import Foreign.Ptr
 
 import Control.Exception
@@ -97,8 +95,8 @@ import System.Posix
 -- into Haskell, the contents of your 'ByteString' will change.
 --
 unsafeMMapFile :: FilePath -> IO ByteString
-unsafeMMapFile f = do
-    fd   <- openFd f ReadOnly defaultFileFlags
+unsafeMMapFile path = do
+    fd <- openFd_ path    
     always (closeFd fd) $ do
         stat <- getFdStatus fd
         let size = fromIntegral (fileSize stat)

@@ -15,6 +15,7 @@ module System.IO.Posix.MMap.Internal (
 
     -- * Converting an mmapped pointer to a 'ByteString'
     unsafePackMMapPtr,      -- :: Ptr Word8 -> CSize -> IO ByteString
+    openFd_,
 
     -- * Low level bindings
     c_mmap,                 -- :: CSize -> CInt -> IO (Ptr Word8)
@@ -23,6 +24,7 @@ module System.IO.Posix.MMap.Internal (
   ) where
 
 import System.IO
+import System.Posix
 import qualified System.IO as IO
 import Foreign.C.Types
 import Foreign.Ptr
@@ -46,6 +48,15 @@ unsafePackMMapPtr p s = do
                           ++ show s ++" bytes at "++show p
     return (fromForeignPtr fp 0 (fromIntegral s))
 {-# INLINE unsafePackMMapPtr #-}
+
+-- | Open file descriptor for different versions of the `unix` library.
+-- 
+openFd_ :: FilePath -> IO Fd
+#if MIN_VERSION_unix(2,8,0)
+openFd_ path = openFd path ReadOnly defaultFileFlags
+#else 
+openFd_ path = openFd path ReadOnly Nothing defaultFileFlags
+#endif    
 
 foreign import ccall unsafe "hs_bytestring_mmap.h hs_bytestring_mmap"
     c_mmap   :: CSize -> CInt -> IO (Ptr Word8)
